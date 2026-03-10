@@ -1,22 +1,36 @@
 import streamlit as st
 from transformers import pipeline
 
-st.title("AI Emoji Predictor")
+st.set_page_config(page_title="AI Emoji Predictor", page_icon="🤖")
 
-@st.cache_resource
-def load_model():
-    return pipeline("sentiment-analysis")
+st.title("🤖 AI Emotion Emoji Predictor")
+st.write("Type a sentence and AI will detect the emotion.")
 
-classifier = load_model()
+classifier = pipeline("text-classification", 
+                      model="j-hartmann/emotion-english-distilroberta-base")
 
-text = st.text_input("Enter your message")
+text = st.text_input("Enter your text")
 
-if st.button("Predict Emoji"):
-    result = classifier(text)
+if st.button("Predict Emotion"):
 
-    label = result[0]["label"]
-
-    if label == "POSITIVE":
-        st.success("😊 Happy")
+    if text.strip() == "":
+        st.warning("Please enter some text")
     else:
-        st.error("😡 Angry")
+        result = classifier(text)[0]
+
+        label = result['label']
+        score = result['score']
+
+        emoji_dict = {
+            "joy": "😊 Happy",
+            "sadness": "😢 Sad",
+            "anger": "😡 Angry",
+            "love": "😍 Love",
+            "fear": "😨 Fear",
+            "surprise": "😲 Surprise"
+        }
+
+        emotion = emoji_dict.get(label.lower(), "😐 Neutral")
+
+        st.success(f"Emotion: {emotion}")
+        st.write(f"Confidence: {score:.2f}")
